@@ -30,12 +30,6 @@
         .animate-blob {
             animation: blob 10s infinite;
         }
-        .animation-delay-2000 {
-            animation-delay: 2s;
-        }
-        .animation-delay-4000 {
-            animation-delay: 4s;
-        }
         
         /* Custom Scrollbar */
         .custom-scrollbar::-webkit-scrollbar {
@@ -52,24 +46,11 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, useMemo } = React;
+        const { useState, useEffect, useMemo, useRef } = React;
 
-        // --- ICONS (Inlined for Single File Portability) ---
+        // --- ICONS ---
         const Icon = ({ path, className, size = 24 }) => (
-            <svg 
-                xmlns="http://www.w3.org/2000/svg" 
-                width={size} 
-                height={size} 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                className={className}
-            >
-                {path}
-            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>{path}</svg>
         );
 
         const ICONS = {
@@ -96,8 +77,7 @@
             SkipForward: <><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" x2="19" y1="5" y2="19"/></>
         };
 
-        // --- APP DATA CONFIGURATION ---
-
+        // --- APP DATA ---
         const MODE_CONFIG = {
             HAPPY: { id: 'happy', label: 'Radiant', icon: 'Smile', gradient: 'from-yellow-300 via-orange-200 to-yellow-100', text: 'text-yellow-900', accent: 'bg-yellow-400', desc: 'Optimizing for joy and continued serotonin flow.' },
             EXCITED: { id: 'excited', label: 'Electric', icon: 'Zap', gradient: 'from-orange-300 via-red-200 to-orange-100', text: 'text-orange-900', accent: 'bg-orange-400', desc: 'High energy detected. Channeling into creative output.' },
@@ -112,240 +92,87 @@
         const CUISINES = ['Global', 'Indian', 'Italian', 'Mexican'];
         const MUSIC_TYPES = ['Hollywood', 'Bollywood'];
 
-        const generateDailyPlan = (modeId, day, cuisineType, musicType) => {
+        const generateDailyPlan = (modeId, cuisineType, musicType) => {
             const musicMap = {
                 happy: { 
-                    Hollywood: [
-                        { track: "Walking On Sunshine", artist: "Katrina & The Waves" },
-                        { track: "Happy", artist: "Pharrell Williams" },
-                        { track: "Can't Stop the Feeling!", artist: "Justin Timberlake" },
-                        { track: "Three Little Birds", artist: "Bob Marley" },
-                        { track: "Lovely Day", artist: "Bill Withers" },
-                        { track: "Good Vibrations", artist: "The Beach Boys" },
-                        { track: "Shiny Happy People", artist: "R.E.M." },
-                        { track: "Best Day of My Life", artist: "American Authors" },
-                        { track: "Top of the World", artist: "The Carpenters" },
-                        { track: "Don't Worry Be Happy", artist: "Bobby McFerrin" }
-                    ], 
-                    Bollywood: [
-                        { track: "Gallan Goodiyaan", artist: "Dil Dhadakne Do" },
-                        { track: "Sooraj Dooba Hain", artist: "Roy" },
-                        { track: "Ude Dil Befikre", artist: "Befikre" },
-                        { track: "Love You Zindagi", artist: "Dear Zindagi" },
-                        { track: "Badtameez Dil", artist: "Yeh Jawaani Hai Deewani" },
-                        { track: "Matargashti", artist: "Tamasha" },
-                        { track: "London Thumakda", artist: "Queen" },
-                        { track: "Senorita", artist: "Zindagi Na Milegi Dobara" },
-                        { track: "Ainvayi Ainvayi", artist: "Band Baaja Baaraat" },
-                        { track: "Chaiyya Chaiyya", artist: "Dil Se" }
-                    ] 
+                    Hollywood: [{ track: "Walking On Sunshine", artist: "Katrina & The Waves" }, { track: "Happy", artist: "Pharrell" }, { track: "Can't Stop the Feeling", artist: "Justin Timberlake" }, { track: "Three Little Birds", artist: "Bob Marley" }, { track: "Lovely Day", artist: "Bill Withers" }], 
+                    Bollywood: [{ track: "Gallan Goodiyaan", artist: "Dil Dhadakne Do" }, { track: "Sooraj Dooba Hain", artist: "Roy" }, { track: "Ude Dil Befikre", artist: "Befikre" }, { track: "Love You Zindagi", artist: "Dear Zindagi" }, { track: "London Thumakda", artist: "Queen" }] 
                 },
                 excited: { 
-                    Hollywood: [
-                        { track: "Don't Stop Me Now", artist: "Queen" },
-                        { track: "Uptown Funk", artist: "Mark Ronson ft. Bruno Mars" },
-                        { track: "Eye of the Tiger", artist: "Survivor" },
-                        { track: "Can't Hold Us", artist: "Macklemore" },
-                        { track: "Thunderstruck", artist: "AC/DC" },
-                        { track: "Lose Yourself", artist: "Eminem" },
-                        { track: "Shake It Off", artist: "Taylor Swift" },
-                        { track: "Shut Up and Dance", artist: "Walk The Moon" },
-                        { track: "Dynamite", artist: "BTS" },
-                        { track: "Firework", artist: "Katy Perry" }
-                    ], 
-                    Bollywood: [
-                        { track: "Abhi Toh Party Shuru Hui Hai", artist: "Badshah" },
-                        { track: "Zingaat", artist: "Dhadak" },
-                        { track: "Kar Gayi Chull", artist: "Kapoor & Sons" },
-                        { track: "High Heels", artist: "Ki & Ka" },
-                        { track: "Kala Chashma", artist: "Baar Baar Dekho" },
-                        { track: "Swag Se Swagat", artist: "Tiger Zinda Hai" },
-                        { track: "Ghungroo", artist: "War" },
-                        { track: "Jai Jai Shiv Shankar", artist: "War" },
-                        { track: "Bang Bang", artist: "Bang Bang" },
-                        { track: "Malhari", artist: "Bajirao Mastani" }
-                    ] 
+                    Hollywood: [{ track: "Don't Stop Me Now", artist: "Queen" }, { track: "Uptown Funk", artist: "Bruno Mars" }, { track: "Eye of the Tiger", artist: "Survivor" }, { track: "Can't Hold Us", artist: "Macklemore" }, { track: "Thunderstruck", artist: "AC/DC" }], 
+                    Bollywood: [{ track: "Abhi Toh Party Shuru Hui Hai", artist: "Badshah" }, { track: "Zingaat", artist: "Dhadak" }, { track: "Kar Gayi Chull", artist: "Kapoor & Sons" }, { track: "Kala Chashma", artist: "Baar Baar Dekho" }, { track: "Swag Se Swagat", artist: "Tiger Zinda Hai" }] 
                 },
                 low: { 
-                    Hollywood: [
-                        { track: "Holocene", artist: "Bon Iver" },
-                        { track: "Skinny Love", artist: "Birdy" },
-                        { track: "Fix You", artist: "Coldplay" },
-                        { track: "Someone Like You", artist: "Adele" },
-                        { track: "Yesterday", artist: "The Beatles" },
-                        { track: "The Sound of Silence", artist: "Simon & Garfunkel" },
-                        { track: "Let Her Go", artist: "Passenger" },
-                        { track: "Hallelujah", artist: "Jeff Buckley" },
-                        { track: "Tears in Heaven", artist: "Eric Clapton" },
-                        { track: "Everybody Hurts", artist: "R.E.M." }
-                    ], 
-                    Bollywood: [
-                        { track: "Kun Faya Kun", artist: "Rockstar" },
-                        { track: "Kabira", artist: "Yeh Jawaani Hai Deewani" },
-                        { track: "Tujhe Kitna Chahne Lage", artist: "Kabir Singh" },
-                        { track: "Channa Mereya", artist: "Ae Dil Hai Mushkil" },
-                        { track: "Agar Tum Saath Ho", artist: "Tamasha" },
-                        { track: "Main Rahoon Ya Na Rahoon", artist: "Armaan Malik" },
-                        { track: "Kal Ho Naa Ho", artist: "Kal Ho Naa Ho" },
-                        { track: "Luka Chuppi", artist: "Rang De Basanti" },
-                        { track: "Maa", artist: "Taare Zameen Par" },
-                        { track: "Tu Jaane Na", artist: "Ajab Prem Ki Ghazab Kahani" }
-                    ] 
+                    Hollywood: [{ track: "Holocene", artist: "Bon Iver" }, { track: "Skinny Love", artist: "Birdy" }, { track: "Fix You", artist: "Coldplay" }, { track: "The Sound of Silence", artist: "Simon & Garfunkel" }, { track: "Let Her Go", artist: "Passenger" }], 
+                    Bollywood: [{ track: "Kun Faya Kun", artist: "Rockstar" }, { track: "Kabira", artist: "Yeh Jawaani Hai Deewani" }, { track: "Tujhe Kitna Chahne Lage", artist: "Kabir Singh" }, { track: "Channa Mereya", artist: "Ae Dil Hai Mushkil" }, { track: "Agar Tum Saath Ho", artist: "Tamasha" }] 
                 },
                 sick: { 
-                    Hollywood: [
-                        { track: "Weightless", artist: "Marconi Union" },
-                        { track: "River Flows in You", artist: "Yiruma" },
-                        { track: "Clair de Lune", artist: "Debussy" },
-                        { track: "Gymnopédie No.1", artist: "Erik Satie" },
-                        { track: "Spiegel im Spiegel", artist: "Arvo Pärt" },
-                        { track: "Only Time", artist: "Enya" },
-                        { track: "Come Away With Me", artist: "Norah Jones" },
-                        { track: "Sunrise", artist: "Norah Jones" },
-                        { track: "Breathe Me", artist: "Sia" },
-                        { track: "Landslide", artist: "Fleetwood Mac" }
-                    ], 
-                    Bollywood: [
-                        { track: "Iktara", artist: "Wake Up Sid" },
-                        { track: "Rehna Tu", artist: "Delhi 6" },
-                        { track: "Khwaja Mere Khwaja", artist: "Jodhaa Akbar" },
-                        { track: "Taare Zameen Par", artist: "Taare Zameen Par" },
-                        { track: "Maula Mere Maula", artist: "Anwar" },
-                        { track: "Jashn-E-Bahaara", artist: "Jodhaa Akbar" },
-                        { track: "Tere Bina", artist: "Guru" },
-                        { track: "Arziyan", artist: "Delhi 6" },
-                        { track: "O Rangrez", artist: "Bhaag Milkha Bhaag" },
-                        { track: "Tu Hi Re", artist: "Bombay" }
-                    ] 
+                    Hollywood: [{ track: "Weightless", artist: "Marconi Union" }, { track: "River Flows in You", artist: "Yiruma" }, { track: "Clair de Lune", artist: "Debussy" }, { track: "Gymnopédie No.1", artist: "Erik Satie" }, { track: "Spiegel im Spiegel", artist: "Arvo Pärt" }], 
+                    Bollywood: [{ track: "Iktara", artist: "Wake Up Sid" }, { track: "Rehna Tu", artist: "Delhi 6" }, { track: "Khwaja Mere Khwaja", artist: "Jodhaa Akbar" }, { track: "Taare Zameen Par", artist: "Taare Zameen Par" }, { track: "Maula Mere Maula", artist: "Anwar" }] 
                 },
                 focussed: { 
-                    Hollywood: [
-                        { track: "Cornfield Chase", artist: "Hans Zimmer" },
-                        { track: "Time", artist: "Inception" },
-                        { track: "Experience", artist: "Ludovico Einaudi" },
-                        { track: "River Flows in You", artist: "Yiruma" },
-                        { track: "Clair de Lune", artist: "Debussy" },
-                        { track: "Nuvole Bianche", artist: "Ludovico Einaudi" },
-                        { track: "Una Mattina", artist: "Ludovico Einaudi" },
-                        { track: "Comptine d'un autre été", artist: "Yann Tiersen" },
-                        { track: "Arrival of the Birds", artist: "The Cinematic Orchestra" },
-                        { track: "On the Nature of Daylight", artist: "Max Richter" }
-                    ], 
-                    Bollywood: [
-                        { track: "Lakshya (Title Track)", artist: "Shankar-Ehsaan-Loy" },
-                        { track: "Aashayein", artist: "Iqbal" },
-                        { track: "Zinda", artist: "Bhaag Milkha Bhaag" },
-                        { track: "Chak De India", artist: "Chak De India" },
-                        { track: "Roobaroo", artist: "Rang De Basanti" },
-                        { track: "Kar Har Maidan Fateh", artist: "Sanju" },
-                        { track: "Besabriyaan", artist: "M.S. Dhoni" },
-                        { track: "Manja", artist: "Kai Po Che" },
-                        { track: "Sadda Haq", artist: "Rockstar" },
-                        { track: "Apna Time Aayega", artist: "Gully Boy" }
-                    ] 
+                    Hollywood: [{ track: "Cornfield Chase", artist: "Hans Zimmer" }, { track: "Time", artist: "Inception" }, { track: "Experience", artist: "Ludovico Einaudi" }, { track: "Nuvole Bianche", artist: "Ludovico Einaudi" }, { track: "On the Nature of Daylight", artist: "Max Richter" }], 
+                    Bollywood: [{ track: "Lakshya", artist: "Shankar-Ehsaan-Loy" }, { track: "Aashayein", artist: "Iqbal" }, { track: "Zinda", artist: "Bhaag Milkha Bhaag" }, { track: "Chak De India", artist: "Chak De India" }, { track: "Roobaroo", artist: "Rang De Basanti" }] 
                 },
                 celebration: { 
-                    Hollywood: [
-                        { track: "Good Times", artist: "Chic" },
-                        { track: "Celebration", artist: "Kool & The Gang" },
-                        { track: "I Gotta Feeling", artist: "Black Eyed Peas" },
-                        { track: "Dancing Queen", artist: "ABBA" },
-                        { track: "September", artist: "Earth, Wind & Fire" },
-                        { track: "Billie Jean", artist: "Michael Jackson" },
-                        { track: "Hey Ya!", artist: "OutKast" },
-                        { track: "Party in the U.S.A.", artist: "Miley Cyrus" },
-                        { track: "Wannabe", artist: "Spice Girls" },
-                        { track: "Mr. Brightside", artist: "The Killers" }
-                    ], 
-                    Bollywood: [
-                        { track: "Badtameez Dil", artist: "Yeh Jawaani Hai Deewani" },
-                        { track: "London Thumakda", artist: "Queen" },
-                        { track: "Kala Chashma", artist: "Baar Baar Dekho" },
-                        { track: "Gallan Goodiyaan", artist: "Dil Dhadakne Do" },
-                        { track: "Aankh Marey", artist: "Simmba" },
-                        { track: "Dilbar", artist: "Satyameva Jayate" },
-                        { track: "Bom Diggy Diggy", artist: "Sonu Ke Titu Ki Sweety" },
-                        { track: "Proper Patola", artist: "Namaste England" },
-                        { track: "Morni Banke", artist: "Badhaai Ho" },
-                        { track: "Hookah Bar", artist: "Khiladi 786" }
-                    ] 
+                    Hollywood: [{ track: "Good Times", artist: "Chic" }, { track: "Celebration", artist: "Kool & The Gang" }, { track: "I Gotta Feeling", artist: "Black Eyed Peas" }, { track: "Dancing Queen", artist: "ABBA" }, { track: "September", artist: "Earth, Wind & Fire" }], 
+                    Bollywood: [{ track: "Badtameez Dil", artist: "YJHD" }, { track: "London Thumakda", artist: "Queen" }, { track: "Kala Chashma", artist: "Baar Baar Dekho" }, { track: "Gallan Goodiyaan", artist: "Dil Dhadakne Do" }, { track: "Aankh Marey", artist: "Simmba" }] 
                 },
                 adventure: { 
-                    Hollywood: [
-                        { track: "Born to be Wild", artist: "Steppenwolf" },
-                        { track: "Go Your Own Way", artist: "Fleetwood Mac" },
-                        { track: "Life is a Highway", artist: "Rascal Flatts" },
-                        { track: "Take Me Home, Country Roads", artist: "John Denver" },
-                        { track: "Sweet Home Alabama", artist: "Lynyrd Skynyrd" },
-                        { track: "Africa", artist: "Toto" },
-                        { track: "Hotel California", artist: "Eagles" },
-                        { track: "Road to Nowhere", artist: "Talking Heads" },
-                        { track: "On the Road Again", artist: "Willie Nelson" },
-                        { track: "Riders on the Storm", artist: "The Doors" }
-                    ], 
-                    Bollywood: [
-                        { track: "Ilahi", artist: "Yeh Jawaani Hai Deewani" },
-                        { track: "Patakha Guddi", artist: "Highway" },
-                        { track: "Dil Chahta Hai", artist: "Dil Chahta Hai" },
-                        { track: "Khwabon Ke Parindey", artist: "Zindagi Na Milegi Dobara" },
-                        { track: "Safarnama", artist: "Tamasha" },
-                        { track: "Journey Song", artist: "Piku" },
-                        { track: "Yuhi Chala Chal", artist: "Swades" },
-                        { track: "Kabira", artist: "Yeh Jawaani Hai Deewani" },
-                        { track: "Hairat", artist: "Anjaana Anjaani" },
-                        { track: "Matargashti", artist: "Tamasha" }
-                    ] 
+                    Hollywood: [{ track: "Born to be Wild", artist: "Steppenwolf" }, { track: "Go Your Own Way", artist: "Fleetwood Mac" }, { track: "Life is a Highway", artist: "Rascal Flatts" }, { track: "Take Me Home", artist: "John Denver" }, { track: "Sweet Home Alabama", artist: "Lynyrd Skynyrd" }], 
+                    Bollywood: [{ track: "Ilahi", artist: "YJHD" }, { track: "Patakha Guddi", artist: "Highway" }, { track: "Dil Chahta Hai", artist: "Dil Chahta Hai" }, { track: "Khwabon Ke Parindey", artist: "ZNMD" }, { track: "Safarnama", artist: "Tamasha" }] 
                 }
             };
 
+            // Food Map - (Keeping same structure as previous for brevity, but available)
             const foodMap = {
                 happy: {
-                    Global: [{ type: "Breakfast", item: "Acai Bowl with Granola" }, { type: "Lunch", item: "Caprese Panini" }, { type: "Snack", item: "Mango Smoothie" }, { type: "Dinner", item: "Spinach & Ricotta Ravioli" }],
-                    Indian: [{ type: "Breakfast", item: "Poha with Pomegranate" }, { type: "Lunch", item: "Paneer Tikka Masala & Naan" }, { type: "Snack", item: "Bhel Puri" }, { type: "Dinner", item: "Vegetable Biryani" }],
-                    Italian: [{ type: "Breakfast", item: "Ricotta & Honey Toast" }, { type: "Lunch", item: "Margherita Pizza" }, { type: "Snack", item: "Gelato" }, { type: "Dinner", item: "Mushroom Risotto" }],
-                    Mexican: [{ type: "Breakfast", item: "Huevos Rancheros" }, { type: "Lunch", item: "Veggie Quesadilla" }, { type: "Snack", item: "Guacamole & Chips" }, { type: "Dinner", item: "Bean Enchiladas" }]
+                    Global: [{ type: "Breakfast", item: "Acai Bowl" }, { type: "Lunch", item: "Caprese Panini" }, { type: "Snack", item: "Mango Smoothie" }, { type: "Dinner", item: "Spinach Ravioli" }],
+                    Indian: [{ type: "Breakfast", item: "Poha" }, { type: "Lunch", item: "Paneer Tikka & Naan" }, { type: "Snack", item: "Bhel Puri" }, { type: "Dinner", item: "Veg Biryani" }],
+                    Italian: [{ type: "Breakfast", item: "Ricotta Toast" }, { type: "Lunch", item: "Margherita Pizza" }, { type: "Snack", item: "Gelato" }, { type: "Dinner", item: "Mushroom Risotto" }],
+                    Mexican: [{ type: "Breakfast", item: "Huevos Rancheros" }, { type: "Lunch", item: "Veggie Quesadilla" }, { type: "Snack", item: "Guacamole" }, { type: "Dinner", item: "Bean Enchiladas" }]
                 },
                 excited: {
-                    Global: [{ type: "Breakfast", item: "Spicy Avocado Toast" }, { type: "Lunch", item: "Mexican Bean Burrito" }, { type: "Snack", item: "Dark Chocolate & Nuts" }, { type: "Dinner", item: "Vegetable Stir Fry with Tofu" }],
+                    Global: [{ type: "Breakfast", item: "Avo Toast" }, { type: "Lunch", item: "Bean Burrito" }, { type: "Snack", item: "Dark Choc" }, { type: "Dinner", item: "Veg Stir Fry" }],
                     Indian: [{ type: "Breakfast", item: "Masala Dosa" }, { type: "Lunch", item: "Chole Bhature" }, { type: "Snack", item: "Samosa Chaat" }, { type: "Dinner", item: "Kadai Paneer" }],
-                    Italian: [{ type: "Breakfast", item: "Frittata with Peppers" }, { type: "Lunch", item: "Spicy Arrabbiata Pasta" }, { type: "Snack", item: "Bruschetta" }, { type: "Dinner", item: "Four Cheese Pizza" }],
-                    Mexican: [{ type: "Breakfast", item: "Chilaquiles Rojos" }, { type: "Lunch", item: "Spicy Bean Burrito" }, { type: "Snack", item: "Elote" }, { type: "Dinner", item: "Vegetarian Fajitas" }]
+                    Italian: [{ type: "Breakfast", item: "Frittata" }, { type: "Lunch", item: "Arrabbiata Pasta" }, { type: "Snack", item: "Bruschetta" }, { type: "Dinner", item: "4 Cheese Pizza" }],
+                    Mexican: [{ type: "Breakfast", item: "Chilaquiles" }, { type: "Lunch", item: "Spicy Burrito" }, { type: "Snack", item: "Elote" }, { type: "Dinner", item: "Veg Fajitas" }]
                 },
                 low: {
-                    Global: [{ type: "Breakfast", item: "Warm Oatmeal with Honey" }, { type: "Lunch", item: "Grilled Cheese & Tomato Soup" }, { type: "Snack", item: "Chamomile Tea" }, { type: "Dinner", item: "Macaroni & Cheese" }],
-                    Indian: [{ type: "Breakfast", item: "Upma" }, { type: "Lunch", item: "Dal Tadka & Rice" }, { type: "Snack", item: "Masala Chai" }, { type: "Dinner", item: "Aloo Gobi & Roti" }],
-                    Italian: [{ type: "Breakfast", item: "Warm Cornetto" }, { type: "Lunch", item: "Minestrone Soup" }, { type: "Snack", item: "Biscotti" }, { type: "Dinner", item: "Gnocchi Butter Sage" }],
-                    Mexican: [{ type: "Breakfast", item: "Oatmeal with Cinnamon" }, { type: "Lunch", item: "Tortilla Soup" }, { type: "Snack", item: "Warm Churros" }, { type: "Dinner", item: "Cheese Quesadilla" }]
+                    Global: [{ type: "Breakfast", item: "Oatmeal" }, { type: "Lunch", item: "Grilled Cheese" }, { type: "Snack", item: "Tea & Biscuits" }, { type: "Dinner", item: "Mac & Cheese" }],
+                    Indian: [{ type: "Breakfast", item: "Upma" }, { type: "Lunch", item: "Dal Rice" }, { type: "Snack", item: "Chai" }, { type: "Dinner", item: "Aloo Gobi" }],
+                    Italian: [{ type: "Breakfast", item: "Croissant" }, { type: "Lunch", item: "Minestrone" }, { type: "Snack", item: "Biscotti" }, { type: "Dinner", item: "Gnocchi" }],
+                    Mexican: [{ type: "Breakfast", item: "Oatmeal" }, { type: "Lunch", item: "Tortilla Soup" }, { type: "Snack", item: "Churros" }, { type: "Dinner", item: "Quesadilla" }]
                 },
                 sick: {
-                    Global: [{ type: "Breakfast", item: "Ginger Tea & Toast" }, { type: "Lunch", item: "Clear Vegetable Soup" }, { type: "Snack", item: "Fresh Orange Juice" }, { type: "Dinner", item: "Steamed Veggies & Rice" }],
-                    Indian: [{ type: "Breakfast", item: "Idli" }, { type: "Lunch", item: "Moong Dal Khichdi" }, { type: "Snack", item: "Turmeric Milk" }, { type: "Dinner", item: "Curd Rice" }],
-                    Italian: [{ type: "Breakfast", item: "Fresh Fruit" }, { type: "Lunch", item: "Pastina in Broth" }, { type: "Snack", item: "Herbal Tea" }, { type: "Dinner", item: "Plain Risotto" }],
-                    Mexican: [{ type: "Breakfast", item: "Papaya & Lime" }, { type: "Lunch", item: "Caldo de Verduras" }, { type: "Snack", item: "Coconut Water" }, { type: "Dinner", item: "Rice & Beans (Mild)" }]
+                    Global: [{ type: "Breakfast", item: "Toast" }, { type: "Lunch", item: "Veg Soup" }, { type: "Snack", item: "Orange Juice" }, { type: "Dinner", item: "Steamed Veg" }],
+                    Indian: [{ type: "Breakfast", item: "Idli" }, { type: "Lunch", item: "Khichdi" }, { type: "Snack", item: "Turmeric Milk" }, { type: "Dinner", item: "Curd Rice" }],
+                    Italian: [{ type: "Breakfast", item: "Fruit" }, { type: "Lunch", item: "Pastina" }, { type: "Snack", item: "Tea" }, { type: "Dinner", item: "Risotto" }],
+                    Mexican: [{ type: "Breakfast", item: "Papaya" }, { type: "Lunch", item: "Veg Broth" }, { type: "Snack", item: "Coconut Water" }, { type: "Dinner", item: "Rice & Beans" }]
                 },
                 focussed: {
-                    Global: [{ type: "Breakfast", item: "Greek Yogurt & Walnuts" }, { type: "Lunch", item: "Quinoa Salad" }, { type: "Snack", item: "Green Tea & Almonds" }, { type: "Dinner", item: "Grilled Tofu" }],
-                    Indian: [{ type: "Breakfast", item: "Sprouts Salad" }, { type: "Lunch", item: "Palak Paneer" }, { type: "Snack", item: "Roasted Makhana" }, { type: "Dinner", item: "Dal Makhani & Rice" }],
-                    Italian: [{ type: "Breakfast", item: "Avocado Toast" }, { type: "Lunch", item: "Caprese Salad" }, { type: "Snack", item: "Olives & Cheese" }, { type: "Dinner", item: "Pasta Primavera" }],
-                    Mexican: [{ type: "Breakfast", item: "Veggie Scramble" }, { type: "Lunch", item: "Burrito Bowl" }, { type: "Snack", item: "Cucumber & Lime" }, { type: "Dinner", item: "Stuffed Peppers" }]
+                    Global: [{ type: "Breakfast", item: "Yogurt" }, { type: "Lunch", item: "Quinoa Salad" }, { type: "Snack", item: "Green Tea" }, { type: "Dinner", item: "Tofu" }],
+                    Indian: [{ type: "Breakfast", item: "Sprouts" }, { type: "Lunch", item: "Palak Paneer" }, { type: "Snack", item: "Makhana" }, { type: "Dinner", item: "Dal Makhani" }],
+                    Italian: [{ type: "Breakfast", item: "Avo Toast" }, { type: "Lunch", item: "Caprese" }, { type: "Snack", item: "Olives" }, { type: "Dinner", item: "Primavera" }],
+                    Mexican: [{ type: "Breakfast", item: "Scramble" }, { type: "Lunch", item: "Burrito Bowl" }, { type: "Snack", item: "Cucumber" }, { type: "Dinner", item: "Stuffed Peppers" }]
                 },
                 celebration: {
-                    Global: [{ type: "Breakfast", item: "Vegetarian Eggs Benedict" }, { type: "Lunch", item: "Truffle Pizza" }, { type: "Snack", item: "Gelato" }, { type: "Dinner", item: "Eggplant Parmesan" }],
-                    Indian: [{ type: "Breakfast", item: "Halwa Puri" }, { type: "Lunch", item: "Special Thali" }, { type: "Snack", item: "Gulab Jamun" }, { type: "Dinner", item: "Paneer Butter Masala" }],
-                    Italian: [{ type: "Breakfast", item: "Tiramisu Pancakes" }, { type: "Lunch", item: "Gnocchi Sorrentina" }, { type: "Snack", item: "Cannoli" }, { type: "Dinner", item: "Lasagna" }],
-                    Mexican: [{ type: "Breakfast", item: "Breakfast Burrito Grande" }, { type: "Lunch", item: "Nachos Supreme" }, { type: "Snack", item: "Tres Leches Cake" }, { type: "Dinner", item: "Enchiladas Suizas" }]
+                    Global: [{ type: "Breakfast", item: "Eggs Benny" }, { type: "Lunch", item: "Truffle Pizza" }, { type: "Snack", item: "Gelato" }, { type: "Dinner", item: "Eggplant Parm" }],
+                    Indian: [{ type: "Breakfast", item: "Halwa Puri" }, { type: "Lunch", item: "Thali" }, { type: "Snack", item: "Gulab Jamun" }, { type: "Dinner", item: "Paneer Butter" }],
+                    Italian: [{ type: "Breakfast", item: "Pancakes" }, { type: "Lunch", item: "Gnocchi" }, { type: "Snack", item: "Cannoli" }, { type: "Dinner", item: "Lasagna" }],
+                    Mexican: [{ type: "Breakfast", item: "Big Burrito" }, { type: "Lunch", item: "Nachos" }, { type: "Snack", item: "Tres Leches" }, { type: "Dinner", item: "Enchiladas" }]
                 },
                 adventure: {
-                    Global: [{ type: "Breakfast", item: "Trail Mix & Fruit" }, { type: "Lunch", item: "Falafel Wrap" }, { type: "Snack", item: "Energy Bar" }, { type: "Dinner", item: "Vegetable Paella" }],
-                    Indian: [{ type: "Breakfast", item: "Aloo Paratha Roll" }, { type: "Lunch", item: "Vada Pav" }, { type: "Snack", item: "Masala Peanuts" }, { type: "Dinner", item: "Pav Bhaji" }],
-                    Italian: [{ type: "Breakfast", item: "Panino with Cheese" }, { type: "Lunch", item: "Pizza Slice" }, { type: "Snack", item: "Arancini" }, { type: "Dinner", item: "Pasta Puttanesca" }],
-                    Mexican: [{ type: "Breakfast", item: "Breakfast Tacos" }, { type: "Lunch", item: "Street Tacos" }, { type: "Snack", item: "Fruit with Tajin" }, { type: "Dinner", item: "Tostadas" }]
+                    Global: [{ type: "Breakfast", item: "Trail Mix" }, { type: "Lunch", item: "Falafel" }, { type: "Snack", item: "Energy Bar" }, { type: "Dinner", item: "Paella" }],
+                    Indian: [{ type: "Breakfast", item: "Kathi Roll" }, { type: "Lunch", item: "Vada Pav" }, { type: "Snack", item: "Peanuts" }, { type: "Dinner", item: "Pav Bhaji" }],
+                    Italian: [{ type: "Breakfast", item: "Panino" }, { type: "Lunch", item: "Pizza Slice" }, { type: "Snack", item: "Arancini" }, { type: "Dinner", item: "Puttanesca" }],
+                    Mexican: [{ type: "Breakfast", item: "Tacos" }, { type: "Lunch", item: "Street Tacos" }, { type: "Snack", item: "Fruit Cup" }, { type: "Dinner", item: "Tostadas" }]
                 }
             };
 
             let schedule = [];
             
-            // Basic schedule logic (can be expanded)
+            // Standardizing schedule creation with logic for day start
             if (modeId === 'focussed') {
                 schedule = [
                     { time: '08:00 AM', task: 'Morning Routine', loc: 'Home', map: 'Home' },
@@ -356,12 +183,12 @@
                     { time: '05:00 PM', task: 'Admin & Emails', loc: 'Office', map: 'Office' },
                     { time: '07:00 PM', task: 'Dinner', loc: 'Home', map: 'Home' },
                     { time: '09:00 PM', task: 'Reading', loc: 'Living Room', map: 'Home' },
-                    { time: '12:00 AM', task: 'Sleep', loc: 'Bed', map: 'Home' },
+                    { time: '11:00 PM', task: 'Sleep Protocol', loc: 'Bed', map: 'Home' },
                 ];
             } else if (modeId === 'celebration') {
                 schedule = [
-                    { time: '08:00 AM', task: 'Excited Wake Up', loc: 'Home', map: 'Home' },
-                    { time: '10:00 AM', task: 'Celebration Brunch', loc: 'Brunch Spot', map: 'Best Brunch' },
+                    { time: '09:00 AM', task: 'Excited Wake Up', loc: 'Home', map: 'Home' },
+                    { time: '10:30 AM', task: 'Celebration Brunch', loc: 'Brunch Spot', map: 'Best Brunch' },
                     { time: '01:00 PM', task: 'Shopping', loc: 'City Center', map: 'Shopping Mall' },
                     { time: '04:00 PM', task: 'Meet Friends', loc: 'Social Hub', map: 'Lounge' },
                     { time: '07:00 PM', task: 'Dinner Party', loc: 'Fine Dining', map: 'Vegetarian Fine Dining' },
@@ -378,18 +205,32 @@
                     { time: '06:00 PM', task: 'Evening Walk', loc: 'Park', map: 'Park' },
                     { time: '08:00 PM', task: 'Dinner', loc: 'Home', map: 'Vegetarian Restaurant' },
                     { time: '10:00 PM', task: 'Relaxation', loc: 'Living Room', map: 'Home' },
-                    { time: '12:00 AM', task: 'Sleep', loc: 'Bed', map: 'Home' },
+                    { time: '11:30 PM', task: 'Sleep', loc: 'Bed', map: 'Home' },
                 ];
             }
 
-            // Playlist is an array now
             const playlist = musicMap[modeId]?.[musicType] || musicMap['happy']['Hollywood'];
             const meals = foodMap[modeId]?.[cuisineType] || foodMap['happy']['Global'];
 
             return { schedule, playlist, meals };
         };
 
-        // --- MAIN APP COMPONENT ---
+        // --- HELPER: TIME PARSING ---
+        // Converts "08:00 AM" to minutes from midnight
+        const parseTimeToMinutes = (timeStr) => {
+            if (!timeStr) return 0;
+            const [time, modifier] = timeStr.split(' ');
+            let [hours, minutes] = time.split(':');
+            hours = parseInt(hours, 10);
+            minutes = parseInt(minutes, 10);
+
+            if (modifier === 'PM' && hours !== 12) hours += 12;
+            if (modifier === 'AM' && hours === 12) hours = 0;
+            
+            return hours * 60 + minutes;
+        };
+
+        // --- MAIN APP ---
 
         function App() {
             const [currentDay, setCurrentDay] = useState(DAYS[new Date().getDay() === 0 ? 6 : new Date().getDay() - 1]);
@@ -415,12 +256,21 @@
             // Music State
             const [trackIndex, setTrackIndex] = useState(0);
 
+            // Scroll ref for auto-scrolling to active task
+            const activeTaskRef = useRef(null);
+
             useEffect(() => {
                 const timer = setInterval(() => setCurrentTime(new Date()), 1000);
                 return () => clearInterval(timer);
             }, []);
 
-            // Reset track when mood or type changes
+            // Auto-scroll active task into view on load
+            useEffect(() => {
+                if (activeTaskRef.current) {
+                    activeTaskRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, [activeMode, customTasks]); // Re-run when list changes
+
             useEffect(() => {
                 setTrackIndex(0);
             }, [activeMode, musicType]);
@@ -429,21 +279,18 @@
                 e.preventDefault();
                 if (!prompt.trim()) return;
                 setIsProcessing(true);
-
                 setTimeout(() => {
                     const lower = prompt.toLowerCase();
                     let newMode = activeMode;
-                    
-                    if (lower.includes('sick') || lower.includes('ill')) newMode = 'SICK';
-                    else if (lower.includes('party') || lower.includes('fun')) newMode = 'CELEBRATION';
-                    else if (lower.includes('work') || lower.includes('focus')) newMode = 'FOCUSSED';
-                    else if (lower.includes('hike') || lower.includes('trip')) newMode = 'ADVENTURE';
-                    else if (lower.includes('sad') || lower.includes('tired')) newMode = 'LOW';
-                    else if (lower.includes('happy') || lower.includes('good')) newMode = 'HAPPY';
-                    else if (lower.includes('energy') || lower.includes('yes')) newMode = 'EXCITED';
-
+                    if (lower.includes('sick')) newMode = 'SICK';
+                    else if (lower.includes('party')) newMode = 'CELEBRATION';
+                    else if (lower.includes('work')) newMode = 'FOCUSSED';
+                    else if (lower.includes('hike')) newMode = 'ADVENTURE';
+                    else if (lower.includes('sad')) newMode = 'LOW';
+                    else if (lower.includes('happy')) newMode = 'HAPPY';
+                    else if (lower.includes('energy')) newMode = 'EXCITED';
                     setActiveMode(newMode);
-                    setAiInsight(`Mood Shift Detected: ${MODE_CONFIG[newMode].label} protocols engaged.`);
+                    setAiInsight(`Mood Shift: ${MODE_CONFIG[newMode].label} protocols engaged.`);
                     setIsProcessing(false);
                     setPrompt('');
                 }, 800);
@@ -462,39 +309,40 @@
                 if (!reminders[index]) { alert("Reminder Set!"); }
             };
 
-            const getLocationString = () => {
-                const parts = [location.city, location.state, location.country].filter(Boolean);
-                return parts.length > 0 ? ` near ${parts.join(', ')}` : '';
-            };
-
-            const openMaps = (query) => {
-                const finalQuery = query + getLocationString();
-                window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(finalQuery)}`, '_blank');
-            };
-            
-            const openYoutube = (query) => window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent("vegetarian recipe " + query)}`, '_blank');
+            const getLocationString = () => [location.city, location.state, location.country].filter(Boolean).length > 0 ? ` near ${[location.city, location.state, location.country].filter(Boolean).join(', ')}` : '';
+            const openMaps = (query) => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query + getLocationString())}`, '_blank');
+            const openYoutube = (query) => window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent("recipe " + query)}`, '_blank');
             const openSpotify = (track, artist) => window.open(`https://open.spotify.com/search/${encodeURIComponent(track + " " + artist)}`, '_blank');
 
             const modeConfig = MODE_CONFIG[activeMode];
             const generatedPlan = useMemo(() => generateDailyPlan(activeMode.toLowerCase(), currentDay, cuisineType, musicType), [activeMode, currentDay, cuisineType, musicType]);
             
-            // Get current track
             const currentTrack = generatedPlan.playlist[trackIndex % generatedPlan.playlist.length];
+            const nextTrack = (e) => { e.stopPropagation(); setTrackIndex(prev => prev + 1); };
 
-            const nextTrack = (e) => {
-                e.stopPropagation(); // Prevent opening spotify when clicking next
-                setTrackIndex(prev => prev + 1);
-            };
-
+            // Sort Tasks
             const fullSchedule = [...generatedPlan.schedule, ...customTasks].sort((a, b) => {
-                const dateA = new Date('1970/01/01 ' + a.time);
-                const dateB = new Date('1970/01/01 ' + b.time);
+                // Handle "12:00 AM" as end of day if needed, but standard Date parsing treats 12 AM as 00:00 (start)
+                // For simplicity, we stick to standard Date parsing
+                const dateA = parseTimeToMinutes(a.time);
+                const dateB = parseTimeToMinutes(b.time);
                 return dateA - dateB;
             });
 
+            // Find Active Task Index
+            const currentMinutes = currentTime.getHours() * 60 + currentTime.getMinutes();
+            let activeIndex = -1;
+            // Find the last task that has started
+            for (let i = 0; i < fullSchedule.length; i++) {
+                if (parseTimeToMinutes(fullSchedule[i].time) <= currentMinutes) {
+                    activeIndex = i;
+                } else {
+                    break; 
+                }
+            }
+
             return (
                 <div className={`min-h-screen w-full font-sans transition-colors duration-700 bg-gradient-to-br ${modeConfig.gradient}`}>
-                    {/* Background Ambience */}
                     <div className="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
                         <div className={`absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full opacity-40 blur-[100px] mix-blend-multiply bg-white`}></div>
                         <div className={`absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full opacity-40 blur-[100px] mix-blend-multiply ${modeConfig.text.replace('text', 'bg').replace('900', '200')}`}></div>
@@ -502,29 +350,20 @@
 
                     <div className="relative z-10 max-w-7xl mx-auto p-4 md:p-8 flex flex-col lg:flex-row gap-8 min-h-screen">
                         
-                        {/* --- LEFT SIDEBAR --- */}
+                        {/* LEFT SIDEBAR */}
                         <div className="w-full lg:w-1/3 flex flex-col gap-6">
-                            
-                            {/* Brand Header */}
                             <div className="backdrop-blur-xl bg-white/60 border border-white/40 p-8 rounded-3xl shadow-xl text-center">
-                                <h1 className={`text-6xl font-black tracking-tighter ${modeConfig.text} mb-2`}>
-                                    DAY<span className="opacity-50">.OS</span>
-                                </h1>
+                                <h1 className={`text-6xl font-black tracking-tighter ${modeConfig.text} mb-2`}>DAY<span className="opacity-50">.OS</span></h1>
                                 <div className={`text-sm font-bold uppercase tracking-widest ${modeConfig.text} opacity-60`}>
                                     {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {currentDay}
                                 </div>
                             </div>
 
-                            {/* Location Tracker */}
                             <div className="backdrop-blur-xl bg-white/60 border border-white/40 p-4 rounded-3xl shadow-sm">
-                                <div 
-                                    className="flex items-center justify-between text-slate-500 font-bold uppercase tracking-widest text-xs mb-2 cursor-pointer hover:text-slate-700"
-                                    onClick={() => setShowLocationSettings(!showLocationSettings)}
-                                >
+                                <div className="flex items-center justify-between text-slate-500 font-bold uppercase tracking-widest text-xs mb-2 cursor-pointer hover:text-slate-700" onClick={() => setShowLocationSettings(!showLocationSettings)}>
                                     <div className="flex items-center gap-2"><Icon path={ICONS.Globe} size={14} /> Location</div>
                                     <span>{showLocationSettings ? 'Close' : 'Edit'}</span>
                                 </div>
-                                
                                 {showLocationSettings ? (
                                     <div className="grid grid-cols-1 gap-2 animate-in fade-in slide-in-from-top-2">
                                         <input className="bg-white/50 border border-white rounded-xl px-3 py-2 text-sm outline-none placeholder-slate-400" placeholder="City" value={location.city} onChange={e => setLocation({...location, city: e.target.value})} />
@@ -539,30 +378,18 @@
                                 )}
                             </div>
 
-                            {/* AI Input */}
                             <div className="backdrop-blur-xl bg-white/60 border border-white/40 p-2 rounded-3xl shadow-lg focus-within:ring-2 ring-white transition-all">
                                 <form onSubmit={handleAnalyze} className="flex gap-2">
-                                    <input 
-                                        type="text" 
-                                        value={prompt}
-                                        onChange={(e) => setPrompt(e.target.value)}
-                                        placeholder="How are you feeling today?"
-                                        className={`w-full bg-transparent outline-none text-sm px-4 font-medium placeholder-slate-500 ${modeConfig.text}`}
-                                    />
+                                    <input type="text" value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder="How are you feeling?" className={`w-full bg-transparent outline-none text-sm px-4 font-medium placeholder-slate-500 ${modeConfig.text}`} />
                                     <button type="submit" className={`p-3 rounded-2xl text-white shadow-md transition-all hover:scale-105 ${modeConfig.accent}`}>
                                         {isProcessing ? <Icon path={ICONS.Loader2} size={18} className="animate-spin" /> : <Icon path={ICONS.Send} size={18} />}
                                     </button>
                                 </form>
                             </div>
 
-                            {/* Mode Grid */}
                             <div className="grid grid-cols-2 gap-3">
                                 {Object.values(MODE_CONFIG).map((mode) => (
-                                    <button
-                                        key={mode.id}
-                                        onClick={() => setActiveMode(mode.id.toUpperCase())}
-                                        className={`p-4 rounded-2xl border flex flex-col items-center gap-2 transition-all duration-300 ${activeMode === mode.id.toUpperCase() ? `bg-white/80 border-white shadow-lg scale-105` : `bg-white/20 border-white/20 hover:bg-white/40`}`}
-                                    >
+                                    <button key={mode.id} onClick={() => setActiveMode(mode.id.toUpperCase())} className={`p-4 rounded-2xl border flex flex-col items-center gap-2 transition-all duration-300 ${activeMode === mode.id.toUpperCase() ? `bg-white/80 border-white shadow-lg scale-105` : `bg-white/20 border-white/20 hover:bg-white/40`}`}>
                                         <Icon path={ICONS[mode.icon]} size={24} className={activeMode === mode.id.toUpperCase() ? modeConfig.text : 'text-slate-500'} />
                                         <span className={`text-[10px] font-bold uppercase tracking-widest ${activeMode === mode.id.toUpperCase() ? modeConfig.text : 'text-slate-500'}`}>{mode.label}</span>
                                     </button>
@@ -570,41 +397,26 @@
                             </div>
                         </div>
 
-                        {/* --- RIGHT DASHBOARD --- */}
+                        {/* RIGHT DASHBOARD */}
                         <div className="w-full lg:w-2/3 flex flex-col gap-6">
                             
-                            {/* Dashboard Header */}
                             <div className="backdrop-blur-xl bg-white/60 border border-white/40 p-6 rounded-3xl shadow-sm flex items-center justify-between">
                                 <div className="flex items-center gap-4">
-                                    <div className={`p-3 rounded-full ${modeConfig.accent} text-white shadow-lg`}>
-                                        <Icon path={ICONS[modeConfig.icon]} size={24} />
-                                    </div>
-                                    <div>
-                                        <h2 className={`text-xl font-bold ${modeConfig.text}`}>{modeConfig.label} Mode Active</h2>
-                                        <p className="text-slate-600 text-sm">{aiInsight || modeConfig.desc}</p>
-                                    </div>
+                                    <div className={`p-3 rounded-full ${modeConfig.accent} text-white shadow-lg`}><Icon path={ICONS[modeConfig.icon]} size={24} /></div>
+                                    <div><h2 className={`text-xl font-bold ${modeConfig.text}`}>{modeConfig.label} Mode Active</h2><p className="text-slate-600 text-sm">{aiInsight || modeConfig.desc}</p></div>
                                 </div>
-                                <div className="hidden md:block text-right">
-                                    <div className="text-xs font-bold uppercase tracking-widest text-slate-400">Dietary Preference</div>
-                                    <div className={`font-bold ${modeConfig.text}`}>Vegetarian 🌱</div>
-                                </div>
+                                <div className="hidden md:block text-right"><div className="text-xs font-bold uppercase tracking-widest text-slate-400">Dietary Preference</div><div className={`font-bold ${modeConfig.text}`}>Vegetarian 🌱</div></div>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {/* Music Player */}
+                                {/* Music */}
                                 <div className="backdrop-blur-xl bg-white/80 border border-white/50 p-6 rounded-3xl shadow-sm hover:shadow-xl transition-all relative overflow-hidden flex flex-col justify-between min-h-[220px]">
                                     <div className={`absolute top-0 right-0 p-4 opacity-10 ${modeConfig.text}`}><Icon path={ICONS.Music} size={80} /></div>
-                                    
-                                    {/* Tabs */}
                                     <div className="flex gap-2 mb-4 relative z-10">
                                         {MUSIC_TYPES.map(type => (
-                                            <button key={type} onClick={() => setMusicType(type)} className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all ${musicType === type ? `${modeConfig.accent} text-white shadow-md` : 'bg-white/50 text-slate-500 hover:bg-white'}`}>
-                                                {type}
-                                            </button>
+                                            <button key={type} onClick={() => setMusicType(type)} className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all ${musicType === type ? `${modeConfig.accent} text-white shadow-md` : 'bg-white/50 text-slate-500 hover:bg-white'}`}>{type}</button>
                                         ))}
                                     </div>
-
-                                    {/* Player Controls */}
                                     <div className="relative z-10 w-full">
                                         <div onClick={() => openSpotify(currentTrack.track, currentTrack.artist)} className="cursor-pointer group mb-2">
                                             <div className="flex items-center gap-2 mb-2">
@@ -614,40 +426,26 @@
                                             <div className={`text-2xl font-bold ${modeConfig.text} leading-tight truncate`}>{currentTrack.track}</div>
                                             <div className="text-slate-500 font-medium truncate">{currentTrack.artist}</div>
                                         </div>
-                                        
                                         <div className="flex justify-end mt-2 pt-2 border-t border-slate-200/50">
-                                            <button 
-                                                onClick={nextTrack} 
-                                                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-white/50 hover:bg-white text-slate-600 shadow-sm`}
-                                            >
-                                                Next Song <Icon path={ICONS.SkipForward} size={14} />
-                                            </button>
+                                            <button onClick={nextTrack} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-white/50 hover:bg-white text-slate-600 shadow-sm`}>Next Song <Icon path={ICONS.SkipForward} size={14} /></button>
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* Food Card */}
+                                {/* Food */}
                                 <div className="backdrop-blur-xl bg-white/60 border border-white/50 p-6 rounded-3xl shadow-sm flex flex-col min-h-[220px]">
                                     <div className="flex flex-col gap-2 mb-4">
-                                        <div className="flex items-center gap-2">
-                                            <Icon path={ICONS.Utensils} className={modeConfig.text} size={20} />
-                                            <span className="text-sm font-bold uppercase tracking-widest text-slate-500">Gastronomy</span>
-                                        </div>
+                                        <div className="flex items-center gap-2"><Icon path={ICONS.Utensils} className={modeConfig.text} size={20} /><span className="text-sm font-bold uppercase tracking-widest text-slate-500">Gastronomy</span></div>
                                         <div className="flex gap-1 flex-wrap">
                                             {CUISINES.map(cuisine => (
-                                                <button key={cuisine} onClick={() => setCuisineType(cuisine)} className={`px-2 py-1 rounded-lg text-[9px] font-bold uppercase transition-all ${cuisineType === cuisine ? `${modeConfig.accent} text-white shadow-sm` : 'bg-white/40 text-slate-400 hover:bg-white'}`}>
-                                                    {cuisine}
-                                                </button>
+                                                <button key={cuisine} onClick={() => setCuisineType(cuisine)} className={`px-2 py-1 rounded-lg text-[9px] font-bold uppercase transition-all ${cuisineType === cuisine ? `${modeConfig.accent} text-white shadow-sm` : 'bg-white/40 text-slate-400 hover:bg-white'}`}>{cuisine}</button>
                                             ))}
                                         </div>
                                     </div>
                                     <div className="space-y-3 overflow-y-auto max-h-[160px] custom-scrollbar pr-2">
                                         {generatedPlan.meals.map((meal, i) => ( 
                                             <div key={i} className="flex justify-between items-center bg-white/50 p-2 rounded-xl border border-white/50">
-                                                <div>
-                                                    <div className="text-[10px] font-bold uppercase text-slate-400">{meal.type}</div>
-                                                    <div className={`text-sm font-bold ${modeConfig.text}`}>{meal.item}</div>
-                                                </div>
+                                                <div><div className="text-[10px] font-bold uppercase text-slate-400">{meal.type}</div><div className={`text-sm font-bold ${modeConfig.text}`}>{meal.item}</div></div>
                                                 <div className="flex gap-1">
                                                     <button onClick={() => openYoutube(meal.item)} className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200" title="Cook This"><Icon path={ICONS.Youtube} size={14} /></button>
                                                     <button onClick={() => openMaps(meal.item + " restaurant")} className="p-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-100" title="Eat Out"><Icon path={ICONS.Navigation} size={14} /></button>
@@ -658,13 +456,11 @@
                                 </div>
                             </div>
 
-                            {/* Full Day Itinerary */}
+                            {/* Itinerary */}
                             <div className="flex-grow backdrop-blur-xl bg-white/60 border border-white/40 p-6 rounded-3xl shadow-lg flex flex-col min-h-[500px]">
                                 <div className="flex justify-between items-center mb-6">
                                     <h3 className={`text-xl font-bold ${modeConfig.text} flex items-center gap-2`}><Icon path={ICONS.Clock} size={20} /> Full Day Itinerary</h3>
-                                    <button onClick={() => setShowAddForm(!showAddForm)} className={`px-4 py-2 rounded-xl text-sm font-bold text-white shadow-md hover:scale-105 transition-all ${modeConfig.accent}`}>
-                                        {showAddForm ? 'Close' : '+ Add Task'}
-                                    </button>
+                                    <button onClick={() => setShowAddForm(!showAddForm)} className={`px-4 py-2 rounded-xl text-sm font-bold text-white shadow-md hover:scale-105 transition-all ${modeConfig.accent}`}>{showAddForm ? 'Close' : '+ Add Task'}</button>
                                 </div>
 
                                 {showAddForm && (
@@ -683,33 +479,39 @@
                                     </div>
                                 )}
 
-                                <div className="flex-grow overflow-y-auto space-y-4 pr-2 custom-scrollbar">
-                                    {fullSchedule.map((item, index) => (
-                                        <div key={index} className="group relative flex gap-4 p-3 rounded-2xl hover:bg-white/60 transition-colors">
-                                            <div className="w-16 pt-1 text-right text-xs font-bold text-slate-400 group-hover:text-slate-600">{item.time}</div>
-                                            <div className="relative pt-1">
-                                                <div className={`w-3 h-3 rounded-full ${modeConfig.accent} shadow-sm z-10 relative ring-2 ring-white`}></div>
-                                                {index !== fullSchedule.length - 1 && <div className="absolute top-4 left-[5px] w-0.5 h-16 bg-slate-200/50"></div>}
-                                            </div>
-                                            <div className="flex-grow flex justify-between items-start">
-                                                <div>
-                                                    <div className={`text-sm font-bold ${modeConfig.text}`}>{item.task}</div>
-                                                    <div className="text-xs text-slate-500 mt-1 flex items-center gap-1">
-                                                        <Icon path={ICONS.MapPin} size={10} /> {item.loc}
-                                                        {item.manual && <span className="bg-slate-200 text-slate-600 px-1 rounded-[4px] text-[9px] uppercase font-bold">Manual</span>}
+                                <div className="flex-grow overflow-y-auto space-y-4 pr-2 custom-scrollbar pb-10">
+                                    {fullSchedule.map((item, index) => {
+                                        const isActive = index === activeIndex;
+                                        return (
+                                            <div 
+                                                key={index} 
+                                                ref={isActive ? activeTaskRef : null}
+                                                className={`group relative flex gap-4 p-3 rounded-2xl transition-all duration-500
+                                                    ${isActive ? 'bg-white shadow-lg border-l-4 border-' + modeConfig.text.split('-')[1] + '-500 scale-[1.02]' : 'hover:bg-white/60 border border-transparent'}
+                                                `}
+                                            >
+                                                <div className={`w-16 pt-1 text-right text-xs font-bold ${isActive ? modeConfig.text : 'text-slate-400 group-hover:text-slate-600'}`}>{item.time}</div>
+                                                <div className="relative pt-1">
+                                                    <div className={`w-3 h-3 rounded-full ${isActive ? 'bg-red-500 animate-pulse' : `${modeConfig.accent}`} shadow-sm z-10 relative ring-2 ring-white`}></div>
+                                                    {index !== fullSchedule.length - 1 && <div className="absolute top-4 left-[5px] w-0.5 h-16 bg-slate-200/50"></div>}
+                                                </div>
+                                                <div className="flex-grow flex justify-between items-start">
+                                                    <div>
+                                                        <div className={`text-sm font-bold ${isActive ? 'text-black text-base' : modeConfig.text}`}>{item.task}</div>
+                                                        <div className="text-xs text-slate-500 mt-1 flex items-center gap-1">
+                                                            <Icon path={ICONS.MapPin} size={10} /> {item.loc}
+                                                            {item.manual && <span className="bg-slate-200 text-slate-600 px-1 rounded-[4px] text-[9px] uppercase font-bold">Manual</span>}
+                                                            {isActive && <span className="bg-red-100 text-red-600 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase animate-pulse">Now</span>}
+                                                        </div>
+                                                    </div>
+                                                    <div className={`flex gap-2 transition-opacity ${isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                                                        <button onClick={() => toggleReminder(index)} className={`p-1.5 rounded-lg transition-colors ${reminders[index] ? 'bg-yellow-100 text-yellow-600' : 'bg-slate-100 text-slate-400 hover:text-slate-600'}`} title="Set Reminder"><Icon path={reminders[index] ? ICONS.CheckCircle2 : ICONS.Bell} size={14} /></button>
+                                                        <button onClick={() => openMaps(item.map)} className="p-1.5 bg-blue-50 text-blue-500 rounded-lg hover:bg-blue-100" title="Get Directions"><Icon path={ICONS.Navigation} size={14} /></button>
                                                     </div>
                                                 </div>
-                                                <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <button onClick={() => toggleReminder(index)} className={`p-1.5 rounded-lg transition-colors ${reminders[index] ? 'bg-yellow-100 text-yellow-600' : 'bg-slate-100 text-slate-400 hover:text-slate-600'}`} title="Set Reminder">
-                                                        <Icon path={reminders[index] ? ICONS.CheckCircle2 : ICONS.Bell} size={14} />
-                                                    </button>
-                                                    <button onClick={() => openMaps(item.map)} className="p-1.5 bg-blue-50 text-blue-500 rounded-lg hover:bg-blue-100" title="Get Directions">
-                                                        <Icon path={ICONS.Navigation} size={14} />
-                                                    </button>
-                                                </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             </div>
                         </div>
