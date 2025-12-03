@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -55,8 +55,6 @@
         const { useState, useEffect, useMemo } = React;
 
         // --- ICONS (Inlined for Single File Portability) ---
-        // Helper to render SVG content. 
-        // Note: Multi-element icons are wrapped in fragments <>...</> to fix JSX syntax errors.
         const Icon = ({ path, className, size = 24 }) => (
             <svg 
                 xmlns="http://www.w3.org/2000/svg" 
@@ -94,7 +92,8 @@
             Bell: <><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></>,
             CheckCircle2: <><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></>,
             PlayCircle: <><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></>,
-            Globe: <><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></>
+            Globe: <><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></>,
+            SkipForward: <><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" x2="19" y1="5" y2="19"/></>
         };
 
         // --- APP DATA CONFIGURATION ---
@@ -115,13 +114,188 @@
 
         const generateDailyPlan = (modeId, day, cuisineType, musicType) => {
             const musicMap = {
-                happy: { Hollywood: { track: "Walking On Sunshine", artist: "Katrina & The Waves" }, Bollywood: { track: "Gallan Goodiyaan", artist: "Dil Dhadakne Do" } },
-                excited: { Hollywood: { track: "Don't Stop Me Now", artist: "Queen" }, Bollywood: { track: "Abhi Toh Party Shuru Hui Hai", artist: "Badshah" } },
-                low: { Hollywood: { track: "Holocene", artist: "Bon Iver" }, Bollywood: { track: "Kun Faya Kun", artist: "A.R. Rahman" } },
-                sick: { Hollywood: { track: "Weightless", artist: "Marconi Union" }, Bollywood: { track: "Iktara", artist: "Wake Up Sid" } },
-                focussed: { Hollywood: { track: "Cornfield Chase", artist: "Hans Zimmer" }, Bollywood: { track: "Lakshya (Title Track)", artist: "Shankar-Ehsaan-Loy" } },
-                celebration: { Hollywood: { track: "Good Times", artist: "Chic" }, Bollywood: { track: "Badtameez Dil", artist: "Yeh Jawaani Hai Deewani" } },
-                adventure: { Hollywood: { track: "Born to be Wild", artist: "Steppenwolf" }, Bollywood: { track: "Ilahi", artist: "Arijit Singh" } }
+                happy: { 
+                    Hollywood: [
+                        { track: "Walking On Sunshine", artist: "Katrina & The Waves" },
+                        { track: "Happy", artist: "Pharrell Williams" },
+                        { track: "Can't Stop the Feeling!", artist: "Justin Timberlake" },
+                        { track: "Three Little Birds", artist: "Bob Marley" },
+                        { track: "Lovely Day", artist: "Bill Withers" },
+                        { track: "Good Vibrations", artist: "The Beach Boys" },
+                        { track: "Shiny Happy People", artist: "R.E.M." },
+                        { track: "Best Day of My Life", artist: "American Authors" },
+                        { track: "Top of the World", artist: "The Carpenters" },
+                        { track: "Don't Worry Be Happy", artist: "Bobby McFerrin" }
+                    ], 
+                    Bollywood: [
+                        { track: "Gallan Goodiyaan", artist: "Dil Dhadakne Do" },
+                        { track: "Sooraj Dooba Hain", artist: "Roy" },
+                        { track: "Ude Dil Befikre", artist: "Befikre" },
+                        { track: "Love You Zindagi", artist: "Dear Zindagi" },
+                        { track: "Badtameez Dil", artist: "Yeh Jawaani Hai Deewani" },
+                        { track: "Matargashti", artist: "Tamasha" },
+                        { track: "London Thumakda", artist: "Queen" },
+                        { track: "Senorita", artist: "Zindagi Na Milegi Dobara" },
+                        { track: "Ainvayi Ainvayi", artist: "Band Baaja Baaraat" },
+                        { track: "Chaiyya Chaiyya", artist: "Dil Se" }
+                    ] 
+                },
+                excited: { 
+                    Hollywood: [
+                        { track: "Don't Stop Me Now", artist: "Queen" },
+                        { track: "Uptown Funk", artist: "Mark Ronson ft. Bruno Mars" },
+                        { track: "Eye of the Tiger", artist: "Survivor" },
+                        { track: "Can't Hold Us", artist: "Macklemore" },
+                        { track: "Thunderstruck", artist: "AC/DC" },
+                        { track: "Lose Yourself", artist: "Eminem" },
+                        { track: "Shake It Off", artist: "Taylor Swift" },
+                        { track: "Shut Up and Dance", artist: "Walk The Moon" },
+                        { track: "Dynamite", artist: "BTS" },
+                        { track: "Firework", artist: "Katy Perry" }
+                    ], 
+                    Bollywood: [
+                        { track: "Abhi Toh Party Shuru Hui Hai", artist: "Badshah" },
+                        { track: "Zingaat", artist: "Dhadak" },
+                        { track: "Kar Gayi Chull", artist: "Kapoor & Sons" },
+                        { track: "High Heels", artist: "Ki & Ka" },
+                        { track: "Kala Chashma", artist: "Baar Baar Dekho" },
+                        { track: "Swag Se Swagat", artist: "Tiger Zinda Hai" },
+                        { track: "Ghungroo", artist: "War" },
+                        { track: "Jai Jai Shiv Shankar", artist: "War" },
+                        { track: "Bang Bang", artist: "Bang Bang" },
+                        { track: "Malhari", artist: "Bajirao Mastani" }
+                    ] 
+                },
+                low: { 
+                    Hollywood: [
+                        { track: "Holocene", artist: "Bon Iver" },
+                        { track: "Skinny Love", artist: "Birdy" },
+                        { track: "Fix You", artist: "Coldplay" },
+                        { track: "Someone Like You", artist: "Adele" },
+                        { track: "Yesterday", artist: "The Beatles" },
+                        { track: "The Sound of Silence", artist: "Simon & Garfunkel" },
+                        { track: "Let Her Go", artist: "Passenger" },
+                        { track: "Hallelujah", artist: "Jeff Buckley" },
+                        { track: "Tears in Heaven", artist: "Eric Clapton" },
+                        { track: "Everybody Hurts", artist: "R.E.M." }
+                    ], 
+                    Bollywood: [
+                        { track: "Kun Faya Kun", artist: "Rockstar" },
+                        { track: "Kabira", artist: "Yeh Jawaani Hai Deewani" },
+                        { track: "Tujhe Kitna Chahne Lage", artist: "Kabir Singh" },
+                        { track: "Channa Mereya", artist: "Ae Dil Hai Mushkil" },
+                        { track: "Agar Tum Saath Ho", artist: "Tamasha" },
+                        { track: "Main Rahoon Ya Na Rahoon", artist: "Armaan Malik" },
+                        { track: "Kal Ho Naa Ho", artist: "Kal Ho Naa Ho" },
+                        { track: "Luka Chuppi", artist: "Rang De Basanti" },
+                        { track: "Maa", artist: "Taare Zameen Par" },
+                        { track: "Tu Jaane Na", artist: "Ajab Prem Ki Ghazab Kahani" }
+                    ] 
+                },
+                sick: { 
+                    Hollywood: [
+                        { track: "Weightless", artist: "Marconi Union" },
+                        { track: "River Flows in You", artist: "Yiruma" },
+                        { track: "Clair de Lune", artist: "Debussy" },
+                        { track: "Gymnopédie No.1", artist: "Erik Satie" },
+                        { track: "Spiegel im Spiegel", artist: "Arvo Pärt" },
+                        { track: "Only Time", artist: "Enya" },
+                        { track: "Come Away With Me", artist: "Norah Jones" },
+                        { track: "Sunrise", artist: "Norah Jones" },
+                        { track: "Breathe Me", artist: "Sia" },
+                        { track: "Landslide", artist: "Fleetwood Mac" }
+                    ], 
+                    Bollywood: [
+                        { track: "Iktara", artist: "Wake Up Sid" },
+                        { track: "Rehna Tu", artist: "Delhi 6" },
+                        { track: "Khwaja Mere Khwaja", artist: "Jodhaa Akbar" },
+                        { track: "Taare Zameen Par", artist: "Taare Zameen Par" },
+                        { track: "Maula Mere Maula", artist: "Anwar" },
+                        { track: "Jashn-E-Bahaara", artist: "Jodhaa Akbar" },
+                        { track: "Tere Bina", artist: "Guru" },
+                        { track: "Arziyan", artist: "Delhi 6" },
+                        { track: "O Rangrez", artist: "Bhaag Milkha Bhaag" },
+                        { track: "Tu Hi Re", artist: "Bombay" }
+                    ] 
+                },
+                focussed: { 
+                    Hollywood: [
+                        { track: "Cornfield Chase", artist: "Hans Zimmer" },
+                        { track: "Time", artist: "Inception" },
+                        { track: "Experience", artist: "Ludovico Einaudi" },
+                        { track: "River Flows in You", artist: "Yiruma" },
+                        { track: "Clair de Lune", artist: "Debussy" },
+                        { track: "Nuvole Bianche", artist: "Ludovico Einaudi" },
+                        { track: "Una Mattina", artist: "Ludovico Einaudi" },
+                        { track: "Comptine d'un autre été", artist: "Yann Tiersen" },
+                        { track: "Arrival of the Birds", artist: "The Cinematic Orchestra" },
+                        { track: "On the Nature of Daylight", artist: "Max Richter" }
+                    ], 
+                    Bollywood: [
+                        { track: "Lakshya (Title Track)", artist: "Shankar-Ehsaan-Loy" },
+                        { track: "Aashayein", artist: "Iqbal" },
+                        { track: "Zinda", artist: "Bhaag Milkha Bhaag" },
+                        { track: "Chak De India", artist: "Chak De India" },
+                        { track: "Roobaroo", artist: "Rang De Basanti" },
+                        { track: "Kar Har Maidan Fateh", artist: "Sanju" },
+                        { track: "Besabriyaan", artist: "M.S. Dhoni" },
+                        { track: "Manja", artist: "Kai Po Che" },
+                        { track: "Sadda Haq", artist: "Rockstar" },
+                        { track: "Apna Time Aayega", artist: "Gully Boy" }
+                    ] 
+                },
+                celebration: { 
+                    Hollywood: [
+                        { track: "Good Times", artist: "Chic" },
+                        { track: "Celebration", artist: "Kool & The Gang" },
+                        { track: "I Gotta Feeling", artist: "Black Eyed Peas" },
+                        { track: "Dancing Queen", artist: "ABBA" },
+                        { track: "September", artist: "Earth, Wind & Fire" },
+                        { track: "Billie Jean", artist: "Michael Jackson" },
+                        { track: "Hey Ya!", artist: "OutKast" },
+                        { track: "Party in the U.S.A.", artist: "Miley Cyrus" },
+                        { track: "Wannabe", artist: "Spice Girls" },
+                        { track: "Mr. Brightside", artist: "The Killers" }
+                    ], 
+                    Bollywood: [
+                        { track: "Badtameez Dil", artist: "Yeh Jawaani Hai Deewani" },
+                        { track: "London Thumakda", artist: "Queen" },
+                        { track: "Kala Chashma", artist: "Baar Baar Dekho" },
+                        { track: "Gallan Goodiyaan", artist: "Dil Dhadakne Do" },
+                        { track: "Aankh Marey", artist: "Simmba" },
+                        { track: "Dilbar", artist: "Satyameva Jayate" },
+                        { track: "Bom Diggy Diggy", artist: "Sonu Ke Titu Ki Sweety" },
+                        { track: "Proper Patola", artist: "Namaste England" },
+                        { track: "Morni Banke", artist: "Badhaai Ho" },
+                        { track: "Hookah Bar", artist: "Khiladi 786" }
+                    ] 
+                },
+                adventure: { 
+                    Hollywood: [
+                        { track: "Born to be Wild", artist: "Steppenwolf" },
+                        { track: "Go Your Own Way", artist: "Fleetwood Mac" },
+                        { track: "Life is a Highway", artist: "Rascal Flatts" },
+                        { track: "Take Me Home, Country Roads", artist: "John Denver" },
+                        { track: "Sweet Home Alabama", artist: "Lynyrd Skynyrd" },
+                        { track: "Africa", artist: "Toto" },
+                        { track: "Hotel California", artist: "Eagles" },
+                        { track: "Road to Nowhere", artist: "Talking Heads" },
+                        { track: "On the Road Again", artist: "Willie Nelson" },
+                        { track: "Riders on the Storm", artist: "The Doors" }
+                    ], 
+                    Bollywood: [
+                        { track: "Ilahi", artist: "Yeh Jawaani Hai Deewani" },
+                        { track: "Patakha Guddi", artist: "Highway" },
+                        { track: "Dil Chahta Hai", artist: "Dil Chahta Hai" },
+                        { track: "Khwabon Ke Parindey", artist: "Zindagi Na Milegi Dobara" },
+                        { track: "Safarnama", artist: "Tamasha" },
+                        { track: "Journey Song", artist: "Piku" },
+                        { track: "Yuhi Chala Chal", artist: "Swades" },
+                        { track: "Kabira", artist: "Yeh Jawaani Hai Deewani" },
+                        { track: "Hairat", artist: "Anjaana Anjaani" },
+                        { track: "Matargashti", artist: "Tamasha" }
+                    ] 
+                }
             };
 
             const foodMap = {
@@ -208,10 +382,11 @@
                 ];
             }
 
-            const music = musicMap[modeId]?.[musicType] || musicMap['happy']['Hollywood'];
+            // Playlist is an array now
+            const playlist = musicMap[modeId]?.[musicType] || musicMap['happy']['Hollywood'];
             const meals = foodMap[modeId]?.[cuisineType] || foodMap['happy']['Global'];
 
-            return { schedule, music, meals };
+            return { schedule, playlist, meals };
         };
 
         // --- MAIN APP COMPONENT ---
@@ -237,10 +412,18 @@
             const [showAddForm, setShowAddForm] = useState(false);
             const [reminders, setReminders] = useState({});
 
+            // Music State
+            const [trackIndex, setTrackIndex] = useState(0);
+
             useEffect(() => {
                 const timer = setInterval(() => setCurrentTime(new Date()), 1000);
                 return () => clearInterval(timer);
             }, []);
+
+            // Reset track when mood or type changes
+            useEffect(() => {
+                setTrackIndex(0);
+            }, [activeMode, musicType]);
 
             const handleAnalyze = (e) => {
                 e.preventDefault();
@@ -295,6 +478,14 @@
             const modeConfig = MODE_CONFIG[activeMode];
             const generatedPlan = useMemo(() => generateDailyPlan(activeMode.toLowerCase(), currentDay, cuisineType, musicType), [activeMode, currentDay, cuisineType, musicType]);
             
+            // Get current track
+            const currentTrack = generatedPlan.playlist[trackIndex % generatedPlan.playlist.length];
+
+            const nextTrack = (e) => {
+                e.stopPropagation(); // Prevent opening spotify when clicking next
+                setTrackIndex(prev => prev + 1);
+            };
+
             const fullSchedule = [...generatedPlan.schedule, ...customTasks].sort((a, b) => {
                 const dateA = new Date('1970/01/01 ' + a.time);
                 const dateB = new Date('1970/01/01 ' + b.time);
@@ -403,6 +594,8 @@
                                 {/* Music Player */}
                                 <div className="backdrop-blur-xl bg-white/80 border border-white/50 p-6 rounded-3xl shadow-sm hover:shadow-xl transition-all relative overflow-hidden flex flex-col justify-between min-h-[220px]">
                                     <div className={`absolute top-0 right-0 p-4 opacity-10 ${modeConfig.text}`}><Icon path={ICONS.Music} size={80} /></div>
+                                    
+                                    {/* Tabs */}
                                     <div className="flex gap-2 mb-4 relative z-10">
                                         {MUSIC_TYPES.map(type => (
                                             <button key={type} onClick={() => setMusicType(type)} className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all ${musicType === type ? `${modeConfig.accent} text-white shadow-md` : 'bg-white/50 text-slate-500 hover:bg-white'}`}>
@@ -410,13 +603,26 @@
                                             </button>
                                         ))}
                                     </div>
-                                    <div onClick={() => openSpotify(generatedPlan.music.track, generatedPlan.music.artist)} className="relative z-10 cursor-pointer group">
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <div className="p-2 bg-green-500 rounded-full text-white group-hover:scale-110 transition-transform"><Icon path={ICONS.PlayCircle} size={20} /></div>
-                                            <span className="text-xs font-bold uppercase tracking-widest text-slate-400">Spotify Connect</span>
+
+                                    {/* Player Controls */}
+                                    <div className="relative z-10 w-full">
+                                        <div onClick={() => openSpotify(currentTrack.track, currentTrack.artist)} className="cursor-pointer group mb-2">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <div className="p-2 bg-green-500 rounded-full text-white group-hover:scale-110 transition-transform"><Icon path={ICONS.PlayCircle} size={20} /></div>
+                                                <span className="text-xs font-bold uppercase tracking-widest text-slate-400">Spotify Connect</span>
+                                            </div>
+                                            <div className={`text-2xl font-bold ${modeConfig.text} leading-tight truncate`}>{currentTrack.track}</div>
+                                            <div className="text-slate-500 font-medium truncate">{currentTrack.artist}</div>
                                         </div>
-                                        <div className={`text-2xl font-bold ${modeConfig.text} leading-tight`}>{generatedPlan.music.track}</div>
-                                        <div className="text-slate-500 font-medium">{generatedPlan.music.artist}</div>
+                                        
+                                        <div className="flex justify-end mt-2 pt-2 border-t border-slate-200/50">
+                                            <button 
+                                                onClick={nextTrack} 
+                                                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-white/50 hover:bg-white text-slate-600 shadow-sm`}
+                                            >
+                                                Next Song <Icon path={ICONS.SkipForward} size={14} />
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -444,7 +650,7 @@
                                                 </div>
                                                 <div className="flex gap-1">
                                                     <button onClick={() => openYoutube(meal.item)} className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200" title="Cook This"><Icon path={ICONS.Youtube} size={14} /></button>
-                                                    <button onClick={() => openMaps(meal.item + " restaurant")} className="p-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200" title="Eat Out"><Icon path={ICONS.Navigation} size={14} /></button>
+                                                    <button onClick={() => openMaps(meal.item + " restaurant")} className="p-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-100" title="Eat Out"><Icon path={ICONS.Navigation} size={14} /></button>
                                                 </div>
                                             </div>
                                         ))}
